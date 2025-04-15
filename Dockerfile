@@ -4,6 +4,8 @@
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
 
+# todo: fetch last build from Nexus
+
 # copy game files here
 # for example:
 WORKDIR /Build
