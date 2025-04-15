@@ -11,6 +11,8 @@ FROM unitymultiplay/linux-base-image:ubuntu-noble
 WORKDIR /Build
 COPY --chown=mpukgame . .
 
+RUN chmod +x ./Build/ImmersiveTwins-UnityServer.x86_64; 
+
 # set your game binary as the entrypoint
 ENTRYPOINT [ "./Build/ImmersiveTwins-UnityServer.x86_64" ]
 
