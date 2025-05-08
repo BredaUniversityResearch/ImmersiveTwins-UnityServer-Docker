@@ -4,15 +4,19 @@
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
 
+# Switch to root user to install dependencies
+USER root
+
 # Install additional dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
     unzip
 
-# Download the game server build from Nexus
 ARG NEXUS_CREDENTIALS
 ARG NEXUS_ANTI_CSRF_TOKEN
+
+# Download the game server build from Nexus
 RUN test -n "$NEXUS_CREDENTIALS" || (echo "Error: environmental variable NEXUS_CREDENTIALS is not set!" && exit 1)
 RUN test -n "$NEXUS_ANTI_CSRF_TOKEN" || (echo "Error: environmental variable $NEXUS_ANTI_CSRF_TOKEN is not set!" && exit 1)
 RUN curl -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets/download?sort=name&direction=desc&q=UnityServer/*&repository=MSP_ProceduralOceanViewUnity-Main" \
@@ -24,10 +28,17 @@ RUN curl -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets
 RUN rm -rf build/ && unzip build.zip -d build/ && rm build.zip && \
     test -f ./build/ImmersiveTwins-Unity || (echo "Error: Binary file ./build/ImmersiveTwins-Unity not found!" && exit 1)
 
+# Switch back to the default user (if necessary)
+USER mpukgame
+
 # Set the working directory to /build and set binary ownership and permissions
 WORKDIR /build
 COPY --chown=mpukgame . .
-RUN chmod +x ./build/ImmersiveTwins-Unity;
+RUN chmod +x ./build/ImmersiveTwins-Unity
 
 # Set binary as the entrypoint
 ENTRYPOINT [ "./build/ImmersiveTwins-Unity" ]
+
+# test with : docker build --no-cache --build-arg NEXUS_CREDENTIALS="$NEXUS_CREDENTIALS" --build-arg NEXUS_ANTI_CSRF_TOKEN="$NEXUS_ANTI_CSRF_TOKEN" -t unity-server-image .
+
+# next step: docker build --secret id=NEXUS_CREDENTIALS,env=NEXUS_CREDENTIALS --secret id=NEXUS_ANTI_CSRF_TOKEN,env=NEXUS_ANTI_CSRF_TOKEN -t unity-server-image .
