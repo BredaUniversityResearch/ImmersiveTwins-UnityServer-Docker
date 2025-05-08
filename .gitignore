@@ -1,2 +1,5 @@
 # Rider project
 .idea
+
+# local secrets
+NEXUS_AUTHORIZATION_HEADERS
