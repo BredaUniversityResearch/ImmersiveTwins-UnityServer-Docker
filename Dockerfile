@@ -4,44 +4,28 @@
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
 
-# todo: fetch last build from Nexus
+# Install additional dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    unzip
 
-# copy game files here
-# for example:
-WORKDIR /Build
+# Download the game server build from Nexus
+ARG NEXUS_CREDENTIALS
+RUN test -n "$NEXUS_CREDENTIALS" || (echo "Error: environmental variable NEXUS_CREDENTIALS is not set!" && exit 1)
+RUN curl -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets/download?sort=name&direction=desc&q=UnityServer/*&repository=MSP_ProceduralOceanViewUnity-Main" \
+    -H "accept: application/json" \
+    -H "Authorization: Basic ${NEXUS_CREDENTIALS}" \
+    -H "NX-ANTI-CSRF-TOKEN: 0.30681511151995955" \
+    -H "X-Nexus-UI: true" \
+    --output "build.zip"
+RUN rm -rf build/ && unzip build.zip -d build/ && rm build.zip && \
+    test -f ./build/ImmersiveTwins-Unity || (echo "Error: Binary file ./build/ImmersiveTwins-Unity not found!" && exit 1)
+
+# Set the working directory to /build and set binary ownership and permissions
+WORKDIR /build
 COPY --chown=mpukgame . .
+RUN chmod +x ./build/ImmersiveTwins-Unity;
 
-RUN chmod +x ./Build/ImmersiveTwins-UnityServer.x86_64; 
-
-# set your game binary as the entrypoint
-ENTRYPOINT [ "./Build/ImmersiveTwins-UnityServer.x86_64" ]
-
-## Create a container build from scratch
-## ======================================================== #
-##                  Unity base image stuff                  #
-## ======================================================== #
-#
-#FROM ubuntu:noble AS mpuk
-#
-#RUN addgroup --gid 2000 mpukgame && \
-#    useradd -g 2000 -u 2000 -ms /bin/sh mpukgame && \
-#    mkdir /game && \
-#    chown mpukgame:mpukgame /game && \
-#    apt update && \
-#    apt upgrade && \
-#    apt install -y ca-certificates
-#USER mpukgame
-#
-## ======================================================== #
-##                    Custom game stuff                     #
-## ======================================================== #
-#
-#FROM mpuk AS game
-#
-## copy game files here
-## for example:
-#WORKDIR /Build
-#COPY --chown=mpukgame . .
-#
-## set your game binary as the entrypoint
-# ENTRYPOINT [ "./Build/ImmersiveTwins-UnityServer.x86_64" ]
+# Set binary as the entrypoint
+ENTRYPOINT [ "./build/ImmersiveTwins-Unity" ]
