@@ -12,11 +12,13 @@ RUN apt-get update && \
 
 # Download the game server build from Nexus
 ARG NEXUS_CREDENTIALS
+ARG $NEXUS_ANTI_CSRF_TOKEN
 RUN test -n "$NEXUS_CREDENTIALS" || (echo "Error: environmental variable NEXUS_CREDENTIALS is not set!" && exit 1)
+RUN test -n "$NEXUS_ANTI_CSRF_TOKEN" || (echo "Error: environmental variable $NEXUS_ANTI_CSRF_TOKEN is not set!" && exit 1)
 RUN curl -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets/download?sort=name&direction=desc&q=UnityServer/*&repository=MSP_ProceduralOceanViewUnity-Main" \
     -H "accept: application/json" \
     -H "Authorization: Basic ${NEXUS_CREDENTIALS}" \
-    -H "NX-ANTI-CSRF-TOKEN: 0.30681511151995955" \
+    -H "NX-ANTI-CSRF-TOKEN: ${NEXUS_ANTI_CSRF_TOKEN}" \
     -H "X-Nexus-UI: true" \
     --output "build.zip"
 RUN rm -rf build/ && unzip build.zip -d build/ && rm build.zip && \
