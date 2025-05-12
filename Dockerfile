@@ -21,9 +21,10 @@ RUN apt-get update && \
 
 # Copy the local secrets folder to /app/secrets in the container
 COPY secrets /app/secrets
-
 # Show secret files for debugging purposes
-RUN ls /app/secrets
+RUN ls /secrets && \
+    # Copy secrets from the mounted directory on the API machine
+    cp -r /secrets /app/secrets
 
 # Verify that the secrets are available
 RUN test -f /app/secrets/NEXUS_AUTHORIZATION_HEADERS || (echo "Error: file ./secrets/NEXUS_AUTHORIZATION_HEADERS is not set!" && exit 1)
