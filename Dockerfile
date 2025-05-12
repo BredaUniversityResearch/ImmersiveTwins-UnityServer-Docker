@@ -19,8 +19,10 @@ RUN apt-get update && \
     curl \
     unzip
 
+
+
 # Copy the local secrets folder to /app/secrets in the container
-COPY secrets /app/secrets
+COPY ./secrets /app/secrets
 
 # Verify that the secrets are available
 RUN test -f /app/secrets/NEXUS_AUTHORIZATION_HEADERS || (echo "Error: file ./secrets/NEXUS_AUTHORIZATION_HEADERS is not set!" && exit 1)
