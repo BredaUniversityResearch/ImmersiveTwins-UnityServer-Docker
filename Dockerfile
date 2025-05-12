@@ -19,21 +19,19 @@ RUN apt-get update && \
     curl \
     unzip
 
-
-
-# Copy the local secrets folder to /app/secrets in the container
-COPY ./secrets /app/secrets
+# Copy the local secrets folder to /run/secrets in the container
+COPY ./secrets /run/secrets
 
 # Verify that the secrets are available
-RUN test -f /app/secrets/NEXUS_AUTHORIZATION_HEADERS || (echo "Error: file ./secrets/NEXUS_AUTHORIZATION_HEADERS is not set!" && exit 1)
+RUN test -f /run/secrets/NEXUS_AUTHORIZATION_HEADERS || (echo "Error: file ./secrets/NEXUS_AUTHORIZATION_HEADERS is not set!" && exit 1)
 
 # Download the game server build from Nexus
 RUN curl --fail-with-body -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets/download?sort=name&direction=desc&q=UnityServer/*&repository=MSP_ProceduralOceanViewUnity-Main" \
     -H "accept: application/json" \
     -H "X-Nexus-UI: true" \
-    -H @/app/secrets/NEXUS_AUTHORIZATION_HEADERS \
+    -H @/run/secrets/NEXUS_AUTHORIZATION_HEADERS \
     --output "build.zip" || (echo "Error: Failed to download build.zip!" && exit 1) && \
-    rm -rf /app/secrets
+    rm -rf /run/secrets
 RUN test -f build.zip || (echo "Error: file build.zip not found!" && exit 1)
 RUN rm -rf build/ && unzip build.zip -d build/ && rm build.zip && \
     test -f ./build/ImmersiveTwins-Unity || (echo "Error: Binary file ./build/ImmersiveTwins-Unity not found!" && exit 1)
