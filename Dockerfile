@@ -1,11 +1,5 @@
 # This Dockerfile is used to build a container image for a Unity game server.
 # source: https://docs.unity.com/ugs/en-us/manual/game-server-hosting/manual/concepts/container-builds
-# Use this console command to build:
-#   docker build --no-cache --secret id=headers,src=NEXUS_AUTHORIZATION_HEADERS -t unity-server-image .
-# You need to create a local file called NEXUS_AUTHORIZATION_HEADERS with the following content:
-#   Authorization: Basic ...
-#   NX-ANTI-CSRF-TOKEN: ...
-# And of course, replace the ... with the actual values.
 
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
@@ -19,26 +13,32 @@ RUN apt-get update && \
     curl \
     unzip
 
+ARG NEXUS_CREDENTIALS
+ARG NEXUS_ANTI_CSRF_TOKEN
+
 # Download the game server build from Nexus
-RUN --mount=type=secret,id=headers \
-    test -f /run/secrets/headers || (echo "Error: secret "headers" is not set!" && exit 1)
-RUN --mount=type=secret,id=headers \
-    curl --fail-with-body -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets/download?sort=name&direction=desc&q=UnityServer/*&repository=MSP_ProceduralOceanViewUnity-Main" \
+RUN test -n "$NEXUS_CREDENTIALS" || (echo "Error: environmental variable NEXUS_CREDENTIALS is not set!" && exit 1)
+RUN test -n "$NEXUS_ANTI_CSRF_TOKEN" || (echo "Error: environmental variable $NEXUS_ANTI_CSRF_TOKEN is not set!" && exit 1)
+RUN curl -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets/download?sort=name&direction=desc&q=UnityServer/*&repository=MSP_ProceduralOceanViewUnity-Main" \
     -H "accept: application/json" \
+    -H "Authorization: Basic ${NEXUS_CREDENTIALS}" \
+    -H "NX-ANTI-CSRF-TOKEN: ${NEXUS_ANTI_CSRF_TOKEN}" \
     -H "X-Nexus-UI: true" \
-    -H @/run/secrets/headers \
-    --output "build.zip" || (echo "Error: Failed to download build.zip!" && exit 1)
-RUN test -f build.zip || (echo "Error: file build.zip not found!" && exit 1)
+    --output "build.zip"
 RUN rm -rf build/ && unzip build.zip -d build/ && rm build.zip && \
     test -f ./build/ImmersiveTwins-Unity || (echo "Error: Binary file ./build/ImmersiveTwins-Unity not found!" && exit 1)
-
-# Set the working directory to /build and set binary ownership and permissions
-WORKDIR /build
-COPY --chown=mpukgame . .
-RUN chmod +x ImmersiveTwins-Unity
 
 # Switch back to the default user (if necessary)
 USER mpukgame
 
+# Set the working directory to /build and set binary ownership and permissions
+WORKDIR /build
+COPY --chown=mpukgame . .
+RUN chmod +x ./build/ImmersiveTwins-Unity
+
 # Set binary as the entrypoint
-ENTRYPOINT [ "ImmersiveTwins-Unity" ]
+ENTRYPOINT [ "./build/ImmersiveTwins-Unity" ]
+
+# test with : docker build --no-cache --build-arg NEXUS_CREDENTIALS="$NEXUS_CREDENTIALS" --build-arg NEXUS_ANTI_CSRF_TOKEN="$NEXUS_ANTI_CSRF_TOKEN" -t unity-server-image .
+
+# next step: docker build --secret id=NEXUS_CREDENTIALS,env=NEXUS_CREDENTIALS --secret id=NEXUS_ANTI_CSRF_TOKEN,env=NEXUS_ANTI_CSRF_TOKEN -t unity-server-image .
