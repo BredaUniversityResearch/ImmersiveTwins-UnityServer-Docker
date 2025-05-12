@@ -1,7 +1,9 @@
 services:
   docker-remote-api:
-    image: alpine
-    container_name: docker-remote-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: docker-remote-api
     ports:
       - "2375:2375" # Expose internal port 2375 to external port 2375
     volumes:

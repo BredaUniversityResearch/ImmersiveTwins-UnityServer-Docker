@@ -1,5 +1,7 @@
 # This Dockerfile is used to build a container image for a Unity game server.
 # source: https://docs.unity.com/ugs/en-us/manual/game-server-hosting/manual/concepts/container-builds
+# Use this console command to build:
+#   docker build --no-cache --build-arg NEXUS_CREDENTIALS="$NEXUS_CREDENTIALS" --build-arg NEXUS_ANTI_CSRF_TOKEN="$NEXUS_ANTI_CSRF_TOKEN" -t unity-server-image .
 
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
@@ -25,20 +27,16 @@ RUN curl -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets
     -H "NX-ANTI-CSRF-TOKEN: ${NEXUS_ANTI_CSRF_TOKEN}" \
     -H "X-Nexus-UI: true" \
     --output "build.zip"
-RUN rm -rf build/ && unzip build.zip -d build/ && rm build.zip && \
-    test -f ./build/ImmersiveTwins-Unity || (echo "Error: Binary file ./build/ImmersiveTwins-Unity not found!" && exit 1)
+RUN rm -rf /app && unzip build.zip -d /app && rm build.zip && \
+    test -f /app/ImmersiveTwins-Unity || (echo "Error: Binary file /app/ImmersiveTwins-Unity not found!" && exit 1)
+
+# Set the working directory to /app and set binary ownership and permissions
+WORKDIR /app
+COPY --chown=mpukgame . .
+RUN chmod +x /app/ImmersiveTwins-Unity
 
 # Switch back to the default user (if necessary)
 USER mpukgame
 
-# Set the working directory to /build and set binary ownership and permissions
-WORKDIR /build
-COPY --chown=mpukgame . .
-RUN chmod +x ./build/ImmersiveTwins-Unity
-
 # Set binary as the entrypoint
-ENTRYPOINT [ "./build/ImmersiveTwins-Unity" ]
-
-# test with : docker build --no-cache --build-arg NEXUS_CREDENTIALS="$NEXUS_CREDENTIALS" --build-arg NEXUS_ANTI_CSRF_TOKEN="$NEXUS_ANTI_CSRF_TOKEN" -t unity-server-image .
-
-# next step: docker build --secret id=NEXUS_CREDENTIALS,env=NEXUS_CREDENTIALS --secret id=NEXUS_ANTI_CSRF_TOKEN,env=NEXUS_ANTI_CSRF_TOKEN -t unity-server-image .
+ENTRYPOINT [ "/app/ImmersiveTwins-Unity" ]
