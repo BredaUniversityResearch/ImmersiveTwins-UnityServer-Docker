@@ -24,6 +24,9 @@ COPY secrets /app/secrets
 # Copy secrets from the mounted directory on the API machine - if available
 RUN (test -d /secrets && cp -r /secrets /app/secrets) || true
 
+# Show the contents of the secrets directory
+RUN ls /app/secrets
+
 # Verify that the secrets are available
 RUN test -f /app/secrets/NEXUS_AUTHORIZATION_HEADERS || (echo "Error: file ./secrets/NEXUS_AUTHORIZATION_HEADERS is not set!" && exit 1)
 
