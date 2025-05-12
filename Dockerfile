@@ -22,7 +22,7 @@ RUN apt-get update && \
 # Copy the local secrets folder to /app/secrets in the container
 COPY secrets /app/secrets
 # Copy secrets from the mounted directory on the API machine - if available
-RUN cp /shared-secrets/* /app/secrets || true
+RUN cp -r /secrets /app/secrets || true
 
 # Show the contents of the secrets directory
 RUN ls /app/secrets

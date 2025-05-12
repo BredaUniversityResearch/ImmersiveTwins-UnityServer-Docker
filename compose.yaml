@@ -6,11 +6,6 @@ services:
       - "2375:2375" # Expose internal port 2375 to external port 2375
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Mount the Docker socket
-      - ./secrets:/host-secrets:rw # Mount the host ./secrets directory to /host-secrets
-      - shared-volume:/shared-secrets:rw # Mount the shared volume to /shared-secrets
-    entrypoint: ["/bin/sh", "-c", "cp /host-secrets/* /shared-secrets/ && tail -f /dev/null"]
+      - ./secrets:/secrets:ro # Mount secrets directory
     logging:
       driver: "local"
-
-volumes:
-  shared-volume:
