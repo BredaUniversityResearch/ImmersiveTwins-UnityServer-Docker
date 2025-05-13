@@ -8,10 +8,6 @@ services:
       - "2375:2375" # Expose internal port 2375 to external port 2375
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Mount the Docker socket
-    environment:
-      # required for ImmersiveTwins-UnityServer-Docker
-      - NEXUS_CREDENTIALS=${NEXUS_CREDENTIALS}
-      - NEXUS_ANTI_CSRF_TOKEN=${NEXUS_ANTI_CSRF_TOKEN}
     command: sh -c "apk add --no-cache socat && socat -v TCP-LISTEN:2375,reuseaddr,fork UNIX-CLIENT:/var/run/docker.sock"
     logging:
       driver: "local"
