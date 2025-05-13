@@ -1,0 +1,13 @@
+services:
+  docker-remote-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: docker-remote-api
+    ports:
+      - "2375:2375" # Expose internal port 2375 to external port 2375
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Mount the Docker socket
+    command: sh -c "apk add --no-cache socat && socat -v TCP-LISTEN:2375,reuseaddr,fork UNIX-CLIENT:/var/run/docker.sock"
+    logging:
+      driver: "local"
