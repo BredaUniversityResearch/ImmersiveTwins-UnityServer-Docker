@@ -2,6 +2,8 @@
 # source: https://docs.unity.com/ugs/en-us/manual/game-server-hosting/manual/concepts/container-builds
 # Use this console command to build:
 #   docker build --no-cache --build-arg NEXUS_CREDENTIALS="$NEXUS_CREDENTIALS" --build-arg NEXUS_ANTI_CSRF_TOKEN="$NEXUS_ANTI_CSRF_TOKEN" -t unity-server-image .
+# to run it use:
+#   docker run -it -p 45101:50123 unity-server-image
 
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
@@ -10,10 +12,14 @@ FROM unitymultiplay/linux-base-image:ubuntu-noble
 USER root
 
 # Install additional dependencies
+# netcat is only used for test network connectivity using commands:
+#   * server: nc -l -p 50123
+#   * client: nc <server-ip> 50123 (from WSL)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
-    unzip
+    unzip \
+    netcat-openbsd
 
 ARG NEXUS_CREDENTIALS
 ARG NEXUS_ANTI_CSRF_TOKEN
@@ -39,4 +45,6 @@ RUN chmod +x /app/ImmersiveTwins-Unity
 USER mpukgame
 
 # Set binary as the entrypoint
-ENTRYPOINT [ "/app/ImmersiveTwins-Unity" ]
+# ENTRYPOINT [ "/app/ImmersiveTwins-Unity" ]
+# To use netcat for testing, uncomment the line below and comment the line above
+ENTRYPOINT [ "nc", "-l", "-p", "50123" ]
