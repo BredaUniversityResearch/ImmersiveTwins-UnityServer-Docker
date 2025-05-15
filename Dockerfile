@@ -22,8 +22,8 @@ ARG NEXUS_CREDENTIALS
 ARG NEXUS_ANTI_CSRF_TOKEN
 
 # Download the game server build from Nexus
-RUN test -n "$NEXUS_CREDENTIALS" || (echo "Error: environmental variable NEXUS_CREDENTIALS is not set!" && exit 1)
-RUN test -n "$NEXUS_ANTI_CSRF_TOKEN" || (echo "Error: environmental variable $NEXUS_ANTI_CSRF_TOKEN is not set!" && exit 1)
+RUN test -n "$NEXUS_CREDENTIALS" || (echo "Error: build argument NEXUS_CREDENTIALS is not set!" && exit 1)
+RUN test -n "$NEXUS_ANTI_CSRF_TOKEN" || (echo "Error: build argument $NEXUS_ANTI_CSRF_TOKEN is not set!" && exit 1)
 RUN curl -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets/download?sort=name&direction=desc&q=UnityServer/*&repository=MSP_ProceduralOceanViewUnity-Main" \
     -H "accept: application/json" \
     -H "Authorization: Basic ${NEXUS_CREDENTIALS}" \
