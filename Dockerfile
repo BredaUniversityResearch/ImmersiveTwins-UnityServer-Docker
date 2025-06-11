@@ -4,7 +4,6 @@
 #   docker build --no-cache --secret id=headers,src=./secrets/nexus.txt -t docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest .
 # You need to create a local file in ./secrets/ or environmental variable called nexus.txt with the following content:
 #   Authorization: Basic ...
-#   NX-ANTI-CSRF-TOKEN: ...
 # And of course, replace the ... with the actual values.
 # to run it use:
 #   docker run -it -p 45101:50123/udp docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
