@@ -6,8 +6,7 @@
 #   Authorization: Basic ...
 # And of course, replace the ... with the actual values.
 # to run it use:
-#   docker run -it -p 45101:50123/udp docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
-#   docker run -it -e MSPXRClientPort=45101 -p 45101:45101/udp docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
+#   docker run -d -e MSPXRClientPort=45101 --network host docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
 
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
