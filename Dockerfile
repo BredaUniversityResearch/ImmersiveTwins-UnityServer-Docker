@@ -1,9 +1,9 @@
 # This Dockerfile is used to build a container image for a Unity game server.
 # source: https://docs.unity.com/ugs/en-us/manual/game-server-hosting/manual/concepts/container-builds
 # Use this console command to build:
-#   docker build --no-cache -t unity-server-image .
+#   docker build --no-cache -t docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:netcat .
 # to run it use:
-#   docker run -it -p 45101:50123/udp unity-server-image
+#   docker run -it -p 45101:50123/udp docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:netcat
 
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
