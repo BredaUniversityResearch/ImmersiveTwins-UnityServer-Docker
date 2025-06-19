@@ -6,6 +6,7 @@
 #   Authorization: Basic ...
 # And of course, replace the ... with the actual values.
 # to run it use:
+#   docker run -d -p 45101:50123/udp docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
 #   docker run -d -e MSPXRClientPort=45101 --network host docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
 
 # Create a container built with the base image
@@ -18,7 +19,7 @@ USER root
 RUN --mount=type=secret,id=headers \
     (test -f /run/secrets/headers || (echo "Error: secret "headers" is not set!" && exit 1)) && \
     apt-get update && \
-	apt-get install -y --no-install-recommends curl unzip && \
+	apt-get install -y --no-install-recommends curl unzip dnsutils && \
     curl --fail-with-body -X "GET" -L "https://nexus.cradle.buas.nl/service/rest/v1/search/assets/download?sort=name&direction=desc&q=UnityServer/*&repository=MSP_ProceduralOceanViewUnity-Main" \
         -H "accept: application/json" \
         -H @/run/secrets/headers \
