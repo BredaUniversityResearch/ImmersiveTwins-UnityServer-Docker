@@ -3,6 +3,7 @@
 # Use this console command to build:
 #   docker build --no-cache -t docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:netcat .
 # to run it use:
+#   docker run -d -p 45101:50123/udp docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:netcat
 #   docker run -d -e MSPXRClientPort=45101 --network host  docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:netcat
 # to test the connection, run (from WSL):
 #   nc -u <server-ip> 45101
