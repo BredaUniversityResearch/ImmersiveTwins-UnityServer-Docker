@@ -8,6 +8,7 @@
 # to run it use:
 #   docker run -d -p 45101:50123/udp docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
 #   docker run -d -e MSPXRClientPort=45101 --network host docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
+#   docker run -d -p 45100:50123/udp -e MSP_CHALLENGE_API_BASE_URL_FOR_SERVER=http://host.docker.internal/1/ docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
 
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
@@ -39,3 +40,8 @@ USER mpukgame
 
 # Set binary as the entrypoint
 ENTRYPOINT [ "/app/ImmersiveTwins-Unity" ]
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 CMD bash -c 'f="$HOME/.config/unity3d/CradleBUas/AugGIS/docker_healthcheck.txt" && \
+[ -f "$f" ] && \
+[ $(cat "$f") = "1" ] && \
+[ $(date +%s) -lt $(( $(stat -c %Y "$f") + 30 )) ]'
