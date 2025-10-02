@@ -1,6 +1,9 @@
 # This Dockerfile is used to build a container image for a Unity game server.
 # source: https://docs.unity.com/ugs/en-us/manual/game-server-hosting/manual/concepts/container-builds
 # Use this console command to build:
+# * for dev:
+#   docker build --no-cache --secret id=headers,src=./secrets/nexus.txt -t docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:dev .
+# * for main:
 #   docker build --no-cache --secret id=headers,src=./secrets/nexus.txt -t docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest .
 # You need to create a local file in ./secrets/ or environmental variable called nexus.txt with the following content:
 #   Authorization: Basic ...
