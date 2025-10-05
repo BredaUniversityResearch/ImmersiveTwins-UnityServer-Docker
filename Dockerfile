@@ -8,10 +8,10 @@
 # You need to create a local file in ./secrets/ or environmental variable called nexus.txt with the following content:
 #   Authorization: Basic ...
 # And of course, replace the ... with the actual values.
-# to run it use:
+# Examples runs: (note the different tags latest/dev)
 #   docker run -d -p 45101:50123/udp docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
 #   docker run -d -e MSPXRClientPort=45101 --network host docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
-#   docker run -d -p 45100:50123/udp -e MSP_CHALLENGE_API_BASE_URL_FOR_SERVER=http://host.docker.internal/1/ docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:latest
+#   docker run -d -p 45100:50123/udp -e APP_ENV=dev -e HEALTHCHECK_WRITER_MODE=1 -e MSP_CHALLENGE_API_BASE_URL_FOR_SERVER=http://host.docker.internal/1/ docker-hub.mspchallenge.info/cradlewebmaster/auggis-unity-server:dev
 
 # Create a container built with the base image
 FROM unitymultiplay/linux-base-image:ubuntu-noble
@@ -36,15 +36,18 @@ RUN --mount=type=secret,id=headers \
 # Set the working directory to /app and set binary ownership and permissions
 WORKDIR /app
 COPY --chown=mpukgame . .
+COPY --chown=mpukgame --chmod=755 docker/dev-healthcheck-writer.sh /home/mpukgame/dev-healthcheck-writer.sh
+COPY --chown=mpukgame --chmod=755 docker/docker-entrypoint.sh /home/mpukgame/docker-entrypoint.sh
+COPY --chown=mpukgame --chmod=755 docker/healthcheck.sh /home/mpukgame/healthcheck.sh
 RUN chmod +x /app/ImmersiveTwins-Unity
 
 # Switch back to the default user (if necessary)
 USER mpukgame
 
 # Set binary as the entrypoint
-ENTRYPOINT [ "/app/ImmersiveTwins-Unity" ]
+ENTRYPOINT ["/home/mpukgame/docker-entrypoint.sh"]
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 CMD bash -c 'f="$HOME/.config/unity3d/CradleBUas/AugGIS/docker_healthcheck.txt" && \
-[ -f "$f" ] && \
-[ $(cat "$f") = "1" ] && \
-[ $(date +%s) -lt $(( $(stat -c %Y "$f") + 30 )) ]'
+# HEALTHCHECK logic will set the container status to "unhealthy" when the game server is not running properly, as follows:
+# * Regularly reading the file content isn't "0" (isListening = false), every 2 seconds.
+# * Ensuring the file was updated within the last 15 seconds since the server should update it every 10 seconds.
+HEALTHCHECK --interval=2s --timeout=10s --start-period=10s CMD ["/home/mpukgame/healthcheck.sh"]
